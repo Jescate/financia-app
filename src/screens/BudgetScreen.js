@@ -34,9 +34,9 @@ export default function BudgetScreen() {
 
   // Total budget vs spent computations
   const totalsByGroup = useMemo(() => {
-     let fijos = { limit: 0, spent: 0, color: '#0A84FF' };
-     let culpa = { limit: 0, spent: 0, color: '#BF5AF2' };
-     let ahorro = { limit: 0, spent: 0, color: '#32D74B' };
+     let fijos = { limit: 0, spent: 0, color: '#67E8F9' };
+     let culpa = { limit: 0, spent: 0, color: '#A78BFA' };
+     let ahorro = { limit: 0, spent: 0, color: '#00E5CC' };
 
      if(data && data.budgets) {
          const groupsMap = {
@@ -99,7 +99,7 @@ export default function BudgetScreen() {
          
          <View style={styles.stackedBarContainer}>
              {totalsByGroup.totalSpent === 0 ? (
-                 <View style={[styles.stackedSegment, { flex: 1, backgroundColor: '#2C2C2E' }]} />
+                 <View style={[styles.stackedSegment, { flex: 1, backgroundColor: '#1E1E2A' }]} />
              ) : (
                  <>
                    {totalsByGroup.fijos.spent > 0 && <View style={[styles.stackedSegment, { flex: totalsByGroup.fijos.spent / totalsByGroup.totalSpent, backgroundColor: totalsByGroup.fijos.color }]} />}
@@ -164,8 +164,8 @@ export default function BudgetScreen() {
                       const limit = sub.limit;
                       const progress = limit > 0 ? (spent / limit) : 0;
                       let progressColor = '#32D74B';
-                      if(progress >= 0.8 && progress <= 1) progressColor = '#FFD60A';
-                      if(progress > 1) progressColor = '#FF453A';
+                      if(progress >= 0.8 && progress <= 1) progressColor = '#E879A8';
+                      if(progress > 1) progressColor = '#EF4444';
 
                       const isEditingThis = editingLimit?.group === activeGroup && editingLimit?.name === sub.name;
 
@@ -203,11 +203,11 @@ export default function BudgetScreen() {
                               </View>
                               
                               <View style={styles.budgetFooterRow}>
-                                  <Text style={[styles.remainingText, progress > 1 && {color: '#FF453A'}]}>
+                                  <Text style={[styles.remainingText, progress > 1 && {color: '#EF4444'}]}>
                                       {progress <= 1 ? `Disponible: S/ ${(limit - spent).toLocaleString()}` : `Excedido por: S/ ${(spent - limit).toLocaleString()}`}
                                   </Text>
                                   <TouchableOpacity onPress={() => handleDelete(activeGroup, sub.name)}>
-                                      <Trash2 color="#FF453A" size={16} />
+                                      <Trash2 color="#EF4444" size={16} />
                                   </TouchableOpacity>
                               </View>
                           </View>
@@ -234,7 +234,7 @@ export default function BudgetScreen() {
              </View>
 
              <View style={styles.modalBtns}>
-                <TouchableOpacity style={[styles.btn, {backgroundColor: '#2C2C2E'}]} onPress={() => setShowAddModal(false)}>
+                <TouchableOpacity style={[styles.btn, {backgroundColor: '#1E1E2A'}]} onPress={() => setShowAddModal(false)}>
                    <Text style={{color: '#FFF', fontWeight:'bold'}}>Cancelar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.btn} onPress={handleAddSub}>
@@ -250,10 +250,10 @@ export default function BudgetScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000000' },
+  container: { flex: 1, backgroundColor: '#0A0A0F' },
   header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16 },
   headerTitle: { color: '#FFFFFF', fontSize: 28, fontWeight: '700' },
-  distributionContainer: { paddingHorizontal: 20, paddingBottom: 24, borderBottomWidth: 1, borderBottomColor: '#1C1C1E', marginBottom: 16 },
+  distributionContainer: { paddingHorizontal: 20, paddingBottom: 24, borderBottomWidth: 1, borderBottomColor: '#12121A', marginBottom: 16 },
   sectionHeading: { color: '#8E8E93', fontSize: 14, marginBottom: 8, fontWeight: '600' },
   totalSpentText: { color: '#FFF', fontSize: 32, fontWeight: 'bold', marginBottom: 16 },
   stackedBarContainer: { flexDirection: 'row', height: 16, borderRadius: 8, overflow: 'hidden', marginBottom: 16 },
@@ -262,36 +262,36 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: 'row', alignItems: 'center' },
   legendDot: { width: 10, height: 10, borderRadius: 5, marginRight: 6 },
   legendText: { color: '#8E8E93', fontSize: 12 },
-  tabsContainer: { paddingLeft: 20, marginBottom: 16, borderBottomWidth: 1, borderBottomColor: '#1C1C1E', paddingBottom: 16 },
-  tabBtn: { backgroundColor: '#1C1C1E', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20, marginRight: 12 },
+  tabsContainer: { paddingLeft: 20, marginBottom: 16, borderBottomWidth: 1, borderBottomColor: '#12121A', paddingBottom: 16 },
+  tabBtn: { backgroundColor: '#12121A', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20, marginRight: 12 },
   tabBtnActive: { backgroundColor: '#32D74B' },
   tabText: { color: '#8E8E93', fontWeight: '600' },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 80 },
   groupHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   groupTitle: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
   addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(50, 215, 75, 0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
-  addBtnText: { color: '#32D74B', fontWeight: '600', fontSize: 13 },
+  addBtnText: { color: '#00E5CC', fontWeight: '600', fontSize: 13 },
   budgetList: { gap: 20 },
   emptyText: { color: '#8E8E93', textAlign: 'center', marginTop: 40, lineHeight: 22 },
-  budgetItem: { backgroundColor: '#1C1C1E', padding: 16, borderRadius: 16 },
+  budgetItem: { backgroundColor: '#12121A', padding: 16, borderRadius: 16 },
   budgetInfoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
   budgetName: { color: '#FFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
   budgetSpent: { color: '#8E8E93', fontSize: 13 },
-  limitWrap: { backgroundColor: '#2C2C2E', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  limitWrap: { backgroundColor: '#1E1E2A', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
   budgetLimitText: { color: '#E5E5EA', fontSize: 13, fontWeight: '500' },
-  editWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2C2C2E', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  editWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1E1E2A', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   editInput: { color: '#FFF', width: 60, marginLeft: 4 },
   saveIcon: { marginLeft: 8 },
-  progressBg: { height: 8, backgroundColor: '#2C2C2E', borderRadius: 4, overflow: 'hidden', marginBottom: 10 },
+  progressBg: { height: 8, backgroundColor: '#1E1E2A', borderRadius: 4, overflow: 'hidden', marginBottom: 10 },
   progressFill: { height: '100%', borderRadius: 4 },
   budgetFooterRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   remainingText: { color: '#FFF', fontSize: 12, fontWeight: '500' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#1C1C1E', padding: 24, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  modalContent: { backgroundColor: '#12121A', padding: 24, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
   modalTitle: { color: '#FFF', fontSize: 18, fontWeight: 'bold', marginBottom: 20 },
   inputGroup: { marginBottom: 16 },
   label: { color: '#8E8E93', marginBottom: 8, fontSize: 13 },
-  input: { backgroundColor: '#2C2C2E', color: '#FFF', padding: 14, borderRadius: 10 },
+  input: { backgroundColor: '#1E1E2A', color: '#FFF', padding: 14, borderRadius: 10 },
   modalBtns: { flexDirection: 'row', gap: 12, marginTop: 10 },
   btn: { flex: 1, padding: 16, borderRadius: 10, alignItems: 'center', backgroundColor: '#32D74B' }
 });

@@ -20,7 +20,7 @@ GoogleSignin.configure({
   iosClientId: "948882782923-4loqjeecrhh859mur0q1kktp1vmi6haj.apps.googleusercontent.com",
 });
 import { 
-  doc, setDoc, getDoc, updateDoc,
+  doc, setDoc, getDoc, updateDoc, deleteDoc,
   collection, query, orderBy, onSnapshot,
   addDoc
 } from 'firebase/firestore';
@@ -360,6 +360,54 @@ export const AuthProvider = ({ children }) => {
     await syncGoals(draftGoals);
   };
 
+
+  const payCreditCard = async (accountId) => {
+    if (!userData || !user) return;
+    const draft = { accounts: [...userData.accounts], budgets: userData.budgets };
+    const accIdx = draft.accounts.findIndex(a => a.id === accountId);
+    if (accIdx !== -1 && draft.accounts[accIdx].type === 'credit') {
+       draft.accounts[accIdx].usedCredit = 0;
+       draft.accounts[accIdx].availableCredit = draft.accounts[accIdx].creditLimit;
+       await syncUserDoc(draft);
+    }
+  };
+
+  const editTransaction = async (transactionId, updatedFields) => {
+    if (!user) return;
+    const transRef = doc(db, 'users', user.uid, 'transactions', transactionId);
+    await updateDoc(transRef, updatedFields);
+  };
+
+  const deleteTransaction = async (transactionId) => {
+    if (!user) return;
+    const transRef = doc(db, 'users', user.uid, 'transactions', transactionId);
+    await deleteDoc(transRef);
+  };
+
+
+  const deleteTransactionsForMonths = async (monthNumbers = ['05', '08']) => {
+    if (!user || !userData) return;
+    const { getDocs, deleteDoc: firestoreDeleteDoc } = require('firebase/firestore');
+    const q = query(collection(db, 'users', user.uid, 'transactions'));
+    const snapshot = await getDocs(q);
+    let deletedCount = 0;
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      if (data.date) {
+        const parts = data.date.split('-');
+        if (parts.length >= 2) {
+          const monthStr = parts[1]; // '05', '08', etc.
+          if (monthNumbers.includes(monthStr)) {
+            await firestoreDeleteDoc(docSnap.ref);
+            deletedCount++;
+          }
+        }
+      }
+    }
+    console.log('Deleted ' + deletedCount + ' transactions for months: ' + monthNumbers.join(', '));
+    return deletedCount;
+  };
+
   const bypassLogin = () => {
     // Only for absolute desperate testing if auth is not working. Cannot be used properly with real firestore rules yet.
   };
@@ -369,7 +417,8 @@ export const AuthProvider = ({ children }) => {
       user, login, loginWithGoogle, logout, register, bypassLogin, getUserData,  
       addTransaction, updateAccountBalance, addAccount, deleteAccount, renameAccount,
       updateBudgetLimit, addBudgetSubcategory, deleteBudgetSubcategory,
-      goals, addGoal, updateGoal, deleteGoal, addMoneyToGoal
+      goals, addGoal, updateGoal, deleteGoal, addMoneyToGoal,
+      payCreditCard, editTransaction, deleteTransaction, deleteTransactionsForMonths
     }}>
       {children}
     </AuthContext.Provider>

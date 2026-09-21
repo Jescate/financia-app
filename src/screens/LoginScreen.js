@@ -105,7 +105,7 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#0A0A0F',
   },
   keyboardView: {
     flex: 1,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: '#12121A',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -161,13 +161,13 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 56,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: '#12121A',
     borderRadius: 12,
     paddingHorizontal: 16,
     color: '#FFFFFF',
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#2C2C2E',
+    borderColor: '#1E1E2A',
   },
   button: {
     height: 56,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#000000', fontSize: 16, fontWeight: '700' },
   separatorContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 24 },
-  separatorLine: { flex: 1, height: 1, backgroundColor: '#2C2C2E' },
+  separatorLine: { flex: 1, height: 1, backgroundColor: '#1E1E2A' },
   separatorText: { color: '#8E8E93', paddingHorizontal: 10, fontSize: 13 },
   googleButton: {
     height: 56,
@@ -203,5 +203,5 @@ const styles = StyleSheet.create({
   googleButtonText: { color: '#000000', fontSize: 16, fontWeight: '700' },
   linksContainer: { marginTop: 32, alignItems: 'center', gap: 16, paddingBottom: 20 },
   link: { color: '#8E8E93', fontSize: 14 },
-  linkBold: { color: '#32D74B', fontWeight: '700' }
+  linkBold: { color: '#00E5CC', fontWeight: '700' }
 });

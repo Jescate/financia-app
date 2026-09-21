@@ -12,18 +12,17 @@ export default function CashScreen() {
   const [editValues, setEditValues] = useState({});
   const [editNames, setEditNames] = useState({});
 
-  // Add Account Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newAccName, setNewAccName] = useState('');
-  const [newAccType, setNewAccType] = useState('cash'); // 'cash', 'savings', 'credit'
-  const [newAccCurrency, setNewAccCurrency] = useState('PEN'); // 'PEN' or 'USD'
+  const [newAccType, setNewAccType] = useState('cash');
+  const [newAccCurrency, setNewAccCurrency] = useState('PEN');
   const [newAccBaseAmount, setNewAccBaseAmount] = useState('');
 
   if (!data) return null;
 
   const totalSoles = data.accounts.filter(a => a.currency === 'PEN' && a.type !== 'credit').reduce((acc, a) => acc + a.balance, 0);
-  const totalDolares = data.accounts.filter(a => a.currency === 'USD' && a.type !== 'credit').reduce((acc, a) => acc + a.balance, 0);
-  const totalCreditoDisponible = data.accounts.filter(a => a.type === 'credit').reduce((acc, a) => acc + (a.availableCredit || 0), 0);
+  const totalInvertido = data.accounts.filter(a => a.currency === 'USD' && a.type === 'savings').reduce((acc, a) => acc + a.balance, 0);
+  const totalCreditoGastado = data.accounts.filter(a => a.type === 'credit').reduce((acc, a) => acc + (a.usedCredit || 0), 0);
 
   const handleEditPress = () => {
     if (isEditing) {
@@ -42,11 +41,20 @@ export default function CashScreen() {
       setIsEditing(false);
       setEditValues({});
       setEditNames({});
+      if (Platform.OS === 'web') {
+        window.alert('Cuentas actualizadas con éxito.');
+      } else {
+        Alert.alert('Éxito', 'Cuentas actualizadas con éxito.');
+      }
     } else {
       const initialVals = {};
       const initialNames = {};
       data.accounts.forEach(a => {
-        initialVals[a.id] = (a.balance).toString();
+        if (a.type === 'credit') {
+          initialVals[a.id] = (a.availableCredit || 0).toString();
+        } else {
+          initialVals[a.id] = (a.balance || 0).toString();
+        }
         initialNames[a.id] = a.name;
       });
       setEditValues(initialVals);
@@ -56,10 +64,25 @@ export default function CashScreen() {
   };
 
   const handleDelete = (id) => {
-    Alert.alert("Eliminar cuenta", "¿Estás seguro que deseas eliminar esta cuenta? Los registros pasados podrían quedar huérfanos.", [
-      { text: "Cancelar", style: "cancel" },
-      { text: "Eliminar", style: "destructive", onPress: () => deleteAccount(id) }
-    ]);
+    const doDelete = async () => {
+      await deleteAccount(id);
+      if (Platform.OS === 'web') {
+        window.alert('Cuenta eliminada con éxito.');
+      } else {
+        Alert.alert('Éxito', 'Cuenta eliminada con éxito.');
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('¿Estás seguro que deseas eliminar esta cuenta?')) {
+        doDelete();
+      }
+    } else {
+      Alert.alert("Eliminar cuenta", "¿Estás seguro que deseas eliminar esta cuenta?", [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Eliminar", style: "destructive", onPress: doDelete }
+      ]);
+    }
   };
 
   const handleCreateAccount = () => {
@@ -68,6 +91,26 @@ export default function CashScreen() {
     setNewAccName('');
     setNewAccBaseAmount('');
     setShowAddModal(false);
+    if (Platform.OS === 'web') {
+      window.alert('Cuenta creada con éxito.');
+    } else {
+      Alert.alert('Éxito', 'Cuenta creada con éxito.');
+    }
+  };
+
+  const getAccountTypeLabel = (type) => {
+    switch(type) {
+      case 'credit': return 'Tarjeta de Cr\u00e9dito';
+      case 'savings': return 'Ahorros';
+      case 'cash': 
+      default: return 'D\u00e9bito';
+    }
+  };
+
+  const getAccountIcon = (account) => {
+    if (account.type === 'credit') return <CreditCard color="#A78BFA" size={24} />;
+    if (account.type === 'savings') return <PiggyBank color="#67E8F9" size={24} />;
+    return <WalletCards color="#00E5CC" size={24} />;
   };
 
   return (
@@ -77,49 +120,47 @@ export default function CashScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mis Cuentas</Text>
         <TouchableOpacity style={styles.editBtn} onPress={handleEditPress}>
-          {isEditing ? <Ionicons name="checkmark" color="#32D74B" size={20} /> : <Edit2 color="#0A84FF" size={20} />}
-          <Text style={[styles.editBtnText, { color: isEditing ? '#32D74B' : '#0A84FF' }]}>
+          {isEditing ? <Ionicons name="checkmark" color="#00E5CC" size={20} /> : <Edit2 color="#67E8F9" size={20} />}
+          <Text style={[styles.editBtnText, { color: isEditing ? '#00E5CC' : '#67E8F9' }]}>
             {isEditing ? 'Guardar' : 'Editar'}
           </Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        {/* Global Summary */}
         <View style={styles.summaryContainer}>
           <View style={styles.summaryRow}>
-            <View style={[styles.summaryCard, { backgroundColor: '#1C1C1E' }]}>
+            <View style={[styles.summaryCard, { backgroundColor: '#12121A' }]}>
               <View style={styles.labelWithIcon}>
                 <WalletCards color="#8E8E93" size={14} />
                 <Text style={styles.summaryLabel}>Total Soles (S/)</Text>
               </View>
-              <Text style={[styles.summaryValue, { color: '#32D74B' }]}>S/ {totalSoles.toLocaleString()}</Text>
+              <Text style={[styles.summaryValue, { color: '#00E5CC' }]}>S/ {totalSoles.toLocaleString()}</Text>
             </View>
-            <View style={[styles.summaryCard, { backgroundColor: '#1C1C1E' }]}>
+            <View style={[styles.summaryCard, { backgroundColor: '#12121A' }]}>
               <View style={styles.labelWithIcon}>
                 <TrendingUp color="#8E8E93" size={14} />
-                <Text style={styles.summaryLabel}>Total Dólares ($)</Text>
+                <Text style={styles.summaryLabel}>Total Invertido ($)</Text>
               </View>
-              <Text style={[styles.summaryValue, { color: '#0A84FF' }]}>$ {totalDolares.toLocaleString()}</Text>
+              <Text style={[styles.summaryValue, { color: '#67E8F9' }]}>$ {totalInvertido.toLocaleString()}</Text>
             </View>
           </View>
 
-          <View style={[styles.summaryCard, { backgroundColor: '#1C1C1E', marginTop: 12 }]}>
+          <View style={[styles.summaryCard, { backgroundColor: '#12121A', marginTop: 12 }]}>
             <View style={styles.labelWithIcon}>
               <CreditCard color="#8E8E93" size={14} />
-              <Text style={styles.summaryLabel}>Crédito Disponible Total</Text>
+              <Text style={styles.summaryLabel}>Cr\u00e9dito Total Gastado</Text>
             </View>
-            <Text style={[styles.summaryValue, { color: '#BF5AF2' }]}>S/ {totalCreditoDisponible.toLocaleString()}</Text>
+            <Text style={[styles.summaryValue, { color: '#E879A8' }]}>S/ {totalCreditoGastado.toLocaleString()}</Text>
           </View>
         </View>
 
-        {/* Cuentas List */}
         <View style={styles.section}>
           <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginBottom: 16}}>
             <Text style={styles.sectionTitle}>Detalles de Cuentas</Text>
             {!isEditing && (
               <TouchableOpacity style={styles.addIconBtn} onPress={() => setShowAddModal(true)}>
-                <Plus color="#32D74B" size={20} />
+                <Plus color="#00E5CC" size={20} />
                 <Text style={styles.addIconBtnText}>Nueva</Text>
               </TouchableOpacity>
             )}
@@ -128,11 +169,7 @@ export default function CashScreen() {
           {data.accounts.map((account) => (
             <View key={account.id} style={[styles.accountCard, isEditing && styles.accountCardEditing]}>
               <View style={styles.accountIcon}>
-                {account.type === 'savings' ? (
-                  <PiggyBank color="#0A84FF" size={24} />
-                ) : (
-                  <WalletCards color="#32D74B" size={24} />
-                )}
+                {getAccountIcon(account)}
               </View>
               
               <View style={styles.accountInfo}>
@@ -146,7 +183,7 @@ export default function CashScreen() {
                   <Text style={styles.accountName}>{account.name}</Text>
                 )}
                 <Text style={styles.accountType}>
-                  {account.type === 'savings' ? 'Ahorro Seguro' : 'Efectivo / Débito'}
+                  {getAccountTypeLabel(account.type)}
                 </Text>
               </View>
               
@@ -169,7 +206,7 @@ export default function CashScreen() {
                       </Text>
                       {account.type === 'credit' && (
                          <Text style={{color: '#8E8E93', fontSize: 11, marginTop: 4}}>
-                            Límite: {account.currency === 'USD' ? '$' : 'S/'} {account.creditLimit?.toLocaleString() || 0}
+                            L\u00edmite: {account.currency === 'USD' ? '$' : 'S/'} {account.creditLimit?.toLocaleString() || 0}
                          </Text>
                       )}
                   </View>
@@ -178,7 +215,7 @@ export default function CashScreen() {
 
               {isEditing && (
                 <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(account.id)}>
-                   <Trash2 color="#FF453A" size={20} />
+                   <Trash2 color="#EF4444" size={20} />
                 </TouchableOpacity>
               )}
             </View>
@@ -215,19 +252,19 @@ export default function CashScreen() {
                    style={[styles.typeBtn, newAccType === 'cash' && styles.typeBtnActive]}
                    onPress={() => setNewAccType('cash')}
                 >
-                   <Text style={[styles.typeBtnText, newAccType === 'cash' && styles.typeBtnTextActive]}>Corriente</Text>
+                   <Text style={[styles.typeBtnText, newAccType === 'cash' && styles.typeBtnTextActive]}>D\u00e9bito</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                    style={[styles.typeBtn, newAccType === 'savings' && styles.typeBtnActive]}
                    onPress={() => setNewAccType('savings')}
                 >
-                   <Text style={[styles.typeBtnText, newAccType === 'savings' && styles.typeBtnTextActive]}>Ahorro</Text>
+                   <Text style={[styles.typeBtnText, newAccType === 'savings' && styles.typeBtnTextActive]}>Ahorros</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                    style={[styles.typeBtn, newAccType === 'credit' && styles.typeBtnActive]}
                    onPress={() => setNewAccType('credit')}
                 >
-                   <Text style={[styles.typeBtnText, newAccType === 'credit' && styles.typeBtnTextActive]}>Crédito</Text>
+                   <Text style={[styles.typeBtnText, newAccType === 'credit' && styles.typeBtnTextActive]}>Cr\u00e9dito</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -236,22 +273,22 @@ export default function CashScreen() {
               <Text style={styles.label}>Moneda</Text>
               <View style={styles.typeSelector}>
                 <TouchableOpacity 
-                   style={[styles.typeBtn, newAccCurrency === 'PEN' && {borderColor: '#32D74B'}]}
+                   style={[styles.typeBtn, newAccCurrency === 'PEN' && {borderColor: '#00E5CC'}]}
                    onPress={() => setNewAccCurrency('PEN')}
                 >
-                   <Text style={[styles.typeBtnText, newAccCurrency === 'PEN' && {color: '#32D74B'}]}>Soles (PEN)</Text>
+                   <Text style={[styles.typeBtnText, newAccCurrency === 'PEN' && {color: '#00E5CC'}]}>Soles (PEN)</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                   style={[styles.typeBtn, newAccCurrency === 'USD' && {borderColor: '#32D74B'}]}
+                   style={[styles.typeBtn, newAccCurrency === 'USD' && {borderColor: '#00E5CC'}]}
                    onPress={() => setNewAccCurrency('USD')}
                 >
-                   <Text style={[styles.typeBtnText, newAccCurrency === 'USD' && {color: '#32D74B'}]}>Dólares (USD)</Text>
+                   <Text style={[styles.typeBtnText, newAccCurrency === 'USD' && {color: '#00E5CC'}]}>D\u00f3lares (USD)</Text>
                 </TouchableOpacity>
               </View>
             </View>
 
             <View style={styles.inputGroup}>
-                <Text style={styles.label}>{newAccType === 'credit' ? 'Límite de Crédito' : 'Saldo Inicial'}</Text>
+                <Text style={styles.label}>{newAccType === 'credit' ? 'L\u00edmite de Cr\u00e9dito' : 'Saldo Inicial'}</Text>
                 <TextInput 
                    style={styles.input} 
                    placeholderTextColor="#8E8E93" 
@@ -275,10 +312,10 @@ export default function CashScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000000' },
-  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  container: { flex: 1, backgroundColor: '#0A0A0F' },
+  header: { paddingHorizontal: 20, paddingTop: 50, paddingBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: '700' },
-  editBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#1C1C1E', borderRadius: 20 },
+  editBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#12121A', borderRadius: 20 },
   editBtnText: { fontWeight: '600', fontSize: 14 },
   scrollContent: { padding: 20, paddingBottom: 40 },
   summaryContainer: { gap: 12, marginBottom: 20 },
@@ -290,32 +327,32 @@ const styles = StyleSheet.create({
   section: { marginBottom: 32 },
   sectionTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '600' },
   addIconBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  addIconBtnText: { color: '#32D74B', fontSize: 14, fontWeight: '600' },
-  accountCard: { flexDirection: 'row', backgroundColor: '#1C1C1E', padding: 16, borderRadius: 16, marginBottom: 12, alignItems: 'center', borderWidth: 1, borderColor: 'transparent' },
+  addIconBtnText: { color: '#00E5CC', fontSize: 14, fontWeight: '600' },
+  accountCard: { flexDirection: 'row', backgroundColor: '#12121A', padding: 16, borderRadius: 16, marginBottom: 12, alignItems: 'center', borderWidth: 1, borderColor: 'transparent' },
   accountCardEditing: { borderColor: '#8E8E93', paddingVertical: 12 },
-  accountIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#2C2C2E', alignItems: 'center', justifyContent: 'center', marginRight: 16 },
+  accountIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#1E1E2A', alignItems: 'center', justifyContent: 'center', marginRight: 16 },
   accountInfo: { flex: 1, marginRight: 8 },
   accountName: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  editNameInput: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 4, borderBottomWidth: 1, borderBottomColor: '#32D74B', padding: 0 },
+  editNameInput: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 4, borderBottomWidth: 1, borderBottomColor: '#00E5CC', padding: 0 },
   accountType: { color: '#8E8E93', fontSize: 12 },
   accountAmount: { alignItems: 'flex-end', justifyContent: 'center' },
   amountText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-  editInputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2C2C2E', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, minWidth: 90 },
+  editInputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1E1E2A', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, minWidth: 90 },
   editCurrency: { color: '#8E8E93', marginRight: 4, fontWeight: '600' },
   editInput: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', flex: 1, textAlign: 'right' },
   deleteBtn: { marginLeft: 12, padding: 8 },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' },
-  modalContent: { backgroundColor: '#1C1C1E', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24 },
+  modalContent: { backgroundColor: '#12121A', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   modalTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: 'bold' },
   inputGroup: { marginBottom: 20 },
   label: { color: '#8E8E93', marginBottom: 8, fontSize: 14 },
-  input: { backgroundColor: '#2C2C2E', color: '#FFFFFF', padding: 15, borderRadius: 10, fontSize: 16 },
+  input: { backgroundColor: '#1E1E2A', color: '#FFFFFF', padding: 15, borderRadius: 10, fontSize: 16 },
   typeSelector: { flexDirection: 'row', gap: 10 },
-  typeBtn: { flex: 1, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#2C2C2E', alignItems: 'center', marginHorizontal: 2 },
-  typeBtnActive: { backgroundColor: '#32D74B', borderColor: '#32D74B' },
+  typeBtn: { flex: 1, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#1E1E2A', alignItems: 'center', marginHorizontal: 2 },
+  typeBtnActive: { backgroundColor: '#00E5CC', borderColor: '#00E5CC' },
   typeBtnText: { color: '#E5E5EA', fontWeight: '600', fontSize: 13 },
   typeBtnTextActive: { color: '#000000' },
-  saveBtn: { backgroundColor: '#32D74B', padding: 16, borderRadius: 10, alignItems: 'center', marginTop: 10, marginBottom: 20 },
+  saveBtn: { backgroundColor: '#00E5CC', padding: 16, borderRadius: 10, alignItems: 'center', marginTop: 10, marginBottom: 20 },
   saveBtnText: { color: '#000000', fontSize: 16, fontWeight: 'bold' }
 });

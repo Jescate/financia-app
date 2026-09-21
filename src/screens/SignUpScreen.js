@@ -108,7 +108,7 @@ export default function SignUpScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000000' },
+  container: { flex: 1, backgroundColor: '#0A0A0F' },
   keyboardView: { flex: 1, justifyContent: 'center', paddingHorizontal: 32 },
   backBtn: { position: 'absolute', top: 60, left: 24, zIndex: 10, padding: 8 },
   logoContainer: { marginBottom: 40, marginTop: 40 },
@@ -118,11 +118,11 @@ const styles = StyleSheet.create({
   errorText: { color: '#FF453A', marginBottom: 16, textAlign: 'center', fontSize: 14 },
   inputGroup: { marginBottom: 20 },
   label: { color: '#E5E5EA', fontSize: 14, fontWeight: '600', marginBottom: 8 },
-  input: { height: 56, backgroundColor: '#1C1C1E', borderRadius: 12, paddingHorizontal: 16, color: '#FFFFFF', fontSize: 16, borderWidth: 1, borderColor: '#2C2C2E' },
-  button: { height: 56, backgroundColor: '#0A84FF', borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
+  input: { height: 56, backgroundColor: '#12121A', borderRadius: 12, paddingHorizontal: 16, color: '#FFFFFF', fontSize: 16, borderWidth: 1, borderColor: '#1E1E2A' },
+  button: { height: 56, backgroundColor: '#67E8F9', borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
   buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   separatorContainer: { flexDirection: 'row', alignItems: 'center', marginVertical: 24 },
-  separatorLine: { flex: 1, height: 1, backgroundColor: '#2C2C2E' },
+  separatorLine: { flex: 1, height: 1, backgroundColor: '#1E1E2A' },
   separatorText: { color: '#8E8E93', paddingHorizontal: 10, fontSize: 13 },
   googleButton: {
     height: 56,
